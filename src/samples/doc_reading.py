@@ -1,14 +1,7 @@
 import os
-import sys
-from pathlib import Path
 
 import google.generativeai as genai
 from dotenv import load_dotenv
-
-BASE_DIR = Path(__file__).parent.parent
-
-if str(BASE_DIR) not in sys.path:
-    sys.path.append(str(BASE_DIR))
 
 from const import SAMPLE_MD
 
@@ -23,6 +16,14 @@ def main():
     print(response.text)
 
 
+def list_files():
+    get_model()
+    print("My files:")
+    for f in genai.list_files():
+        print("removing", f.name)
+        f.delete()
+
+
 def get_model():
     load_dotenv()
     genai.configure(api_key=os.environ["API_KEY"])
@@ -30,4 +31,5 @@ def get_model():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    list_files()

@@ -54,7 +54,7 @@ def max_tokens_example(model):
     response = model.generate_content(
         "Write a story about a magic backpack.",
         generation_config=genai.GenerationConfig(
-            max_output_tokens=250,
+            max_output_tokens=1000,
             temperature=0.1,
         ),
     )
