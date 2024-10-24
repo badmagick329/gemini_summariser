@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from samples.doc_reading import main as run
+from samples.video_example import main as run
 
 BASE_DIR = Path(__file__).parent
 
@@ -10,7 +10,6 @@ if str(BASE_DIR) not in sys.path:
 
 
 def main():
-    print(BASE_DIR)
     run()
 
 
