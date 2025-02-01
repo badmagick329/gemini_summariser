@@ -3,6 +3,8 @@ import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 
+from const import GEMINI_MODEL
+
 
 def main():
     model = get_model()
@@ -17,7 +19,7 @@ def main():
 def get_model():
     load_dotenv()
     genai.configure(api_key=os.environ["API_KEY"])
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel(GEMINI_MODEL)
 
 
 def basic(model):

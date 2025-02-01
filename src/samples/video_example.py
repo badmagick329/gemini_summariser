@@ -7,6 +7,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 
 from const import (
+    GEMINI_MODEL,
     GEMINI_OUTPUT_DIR,
     GOOGLE_FILES_JSON,
     SAMPLE_YOUTUBE_VIDEO,
@@ -34,7 +35,8 @@ def main():
 
 
 def get_args() -> tuple[str, str]:
-    prompt = "Summarise this video. Then create a quiz with answer key based on the information in the video."
+    # prompt = "Summarise this video. Then create a quiz with answer key based on the information in the video."
+    prompt = "Summarise this video."
     url = SAMPLE_YOUTUBE_VIDEO
 
     for arg in sys.argv[1:]:
@@ -72,4 +74,4 @@ def video_processing_example(downloaded_file: Path, prompt: str) -> str:
 def get_model():
     load_dotenv()
     genai.configure(api_key=os.environ["API_KEY"])
-    return genai.GenerativeModel(model_name="gemini-1.5-pro")
+    return genai.GenerativeModel(GEMINI_MODEL)

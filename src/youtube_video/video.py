@@ -65,6 +65,6 @@ class Video:
 
     def _create_cmd(self) -> str:
         return (
-            f"yt-dlp -q https://youtu.be/{self.video_id} "
+            f"yt-dlp -q -4 https://youtu.be/{self.video_id} "
             f'-o "{str(self.output_file_without_ext)}"'
         )

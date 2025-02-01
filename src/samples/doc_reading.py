@@ -4,7 +4,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from google.generativeai.types import File
 
-from const import GOOGLE_FILES_JSON, SAMPLE_MD
+from const import GEMINI_MODEL, GOOGLE_FILES_JSON, SAMPLE_MD
 from google_files import GoogleFilesManager, GoogleFilesMappingsJson
 
 
@@ -105,7 +105,7 @@ def remove_all_uploads():
 def get_model():
     load_dotenv()
     genai.configure(api_key=os.environ["API_KEY"])
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel(GEMINI_MODEL)
 
 
 if __name__ == "__main__":
