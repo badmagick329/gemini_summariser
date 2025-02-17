@@ -15,6 +15,8 @@ from const import (
 )
 from google_files import GoogleFilesManager, GoogleFilesMappingsJson
 from output_handlers import GeminiOutput
+from output_handlers.markdown_printer import MarkdownPrinter
+from samples.prompts import Mediator
 from youtube_video import Video
 
 
@@ -35,15 +37,7 @@ def main():
 
 
 def get_args() -> tuple[str, str]:
-    # prompt = "Summarise this video. Then create a quiz with answer key based on the information in the video."
-    prompt = """Carefully watch and understand the video provided and answer the following questions
-    
-    1. Who seems to be the creator of the video
-    2. What is the main topic discussed in the video
-    3. Highlight the key points mentioned in the video and summarise them
-    4. Is there anything important about the video that should be mentioned?
-    5. Highlight the information from the video that can be useful to learn or know, if any
-    """
+    prompt = Mediator.prompt1()
     url = SAMPLE_YOUTUBE_VIDEO
 
     for arg in sys.argv[1:]:
@@ -73,9 +67,9 @@ def video_processing_example(downloaded_file: Path, prompt: str) -> str:
     response = model.generate_content(
         [sample_video, prompt], request_options={"timeout": 600}
     )
-    summary = response.text
+    summary = Mediator.clean1(response.text)
+    MarkdownPrinter(summary).print_with_glow()
 
-    print(summary)
     while True:
         question = input("Ask a question about the video or type q to quit\n")
         new_prompt = f"You previous answered this in response to this video: {summary}. Now answer this: {question}"
@@ -84,7 +78,7 @@ def video_processing_example(downloaded_file: Path, prompt: str) -> str:
         response = model.generate_content(
             [sample_video, new_prompt], request_options={"timeout": 600}
         )
-        print(response.text)
+        MarkdownPrinter(response.text).print_with_glow()
 
     return response.text
 
