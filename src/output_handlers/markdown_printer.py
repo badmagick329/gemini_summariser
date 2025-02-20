@@ -14,4 +14,5 @@ class MarkdownPrinter:
             text=True,
             capture_output=False,
             check=True,
+            encoding="utf-8",
         )
