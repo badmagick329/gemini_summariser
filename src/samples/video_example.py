@@ -13,12 +13,12 @@ from const import (
     SAMPLE_YOUTUBE_VIDEO,
     YOUTUBE_DOWNLOAD_FOLDER,
 )
-from core.video_factory import VideoFactory
-from core.youtube_video import YoutubeVideo
 from google_files import GoogleFilesManager, GoogleFilesMappingsJson
 from output_handlers import GeminiOutput
 from output_handlers.markdown_printer import MarkdownPrinter
 from samples.prompts import Mediator
+from video.video_factory import VideoFactory
+from video.youtube_video import YoutubeVideo
 
 
 def main():

@@ -1,4 +1,4 @@
-from disk_cache.icache_manager import ICacheManager
+from .icache_manager import ICacheManager
 
 
 class Cache:

@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from core.base_video import BaseVideo
-from youtube_video.downloader import Downloader, DownloadStatus
+from downloader import Downloader, DownloadStatus
+
+from .base_video import BaseVideo
 
 
 class YoutubeVideo(BaseVideo):
