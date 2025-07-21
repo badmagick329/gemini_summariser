@@ -51,10 +51,11 @@ class ParsedVideoFormat:
 
 
 class ParsedAudioFormat:
-    _regex = re.compile(r"^(\d+).+(\d{3,4})k https.+")
+    _regex = re.compile(r"^((\d{3}-\d)|\d{3}).+(\d{3,4})k https.+\d+k \d+k (.+)$")
     _text: str
     _size: int
-    _format_id: int
+    _format_id: str
+    _description: str
 
     def __init__(self, text: str) -> None:
         if not ParsedAudioFormat.is_valid(text):
@@ -71,7 +72,7 @@ class ParsedAudioFormat:
         return self._size
 
     @property
-    def format_id(self) -> int:
+    def format_id(self) -> str:
         return self._format_id
 
     def parse(self):
@@ -79,8 +80,21 @@ class ParsedAudioFormat:
         if match is None:
             raise ValueError(f"Invalid audio format: {self._text}")
 
-        self._format_id = int(match.group(1))
-        self._size = int(match.group(2))
+        self._format_id = match.group(1)
+        self._size = int(match.group(3))
+        self._description = match.group(4)
+
+    @classmethod
+    def remove_alternative_languages(
+        cls, parsed_audio_formats: list["ParsedAudioFormat"]
+    ) -> list["ParsedAudioFormat"]:
+        originals = [
+            p
+            for p in parsed_audio_formats
+            if "original (default)" in p._description.lower()
+        ]
+
+        return originals if originals else parsed_audio_formats
 
 
 class Downloader:
@@ -160,7 +174,9 @@ class DownloadCommand:
             if ParsedAudioFormat.is_valid(line):
                 parsed_audio_formats.append(ParsedAudioFormat(line))
 
-        return parsed_video_formats, parsed_audio_formats
+        return parsed_video_formats, ParsedAudioFormat.remove_alternative_languages(
+            parsed_audio_formats
+        )
 
     def _get_best_formats(self) -> tuple[ParsedVideoFormat, ParsedAudioFormat]:
         video_formats, audio_formats = self._get_available_formats()
