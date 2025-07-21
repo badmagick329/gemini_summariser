@@ -13,25 +13,21 @@ from const import (
     SAMPLE_YOUTUBE_VIDEO,
     YOUTUBE_DOWNLOAD_FOLDER,
 )
+from core.video_factory import VideoFactory
+from core.youtube_video import YoutubeVideo
 from google_files import GoogleFilesManager, GoogleFilesMappingsJson
 from output_handlers import GeminiOutput
 from output_handlers.markdown_printer import MarkdownPrinter
 from samples.prompts import Mediator
-from youtube_video import Video
 
 
 def main():
     url, prompt = get_args()
 
-    video = Video(url, YOUTUBE_DOWNLOAD_FOLDER)
-    print("Downloding video...")
-    download_status = video.download()
-    print(download_status)
-    print(video.downloaded_file())
-    downloaded_file = video.downloaded_file()
-    assert downloaded_file, "Error downloading file"
+    video_factory = VideoFactory(YOUTUBE_DOWNLOAD_FOLDER)
+    video = video_factory.create_video(url)
 
-    response = video_processing_example(downloaded_file=downloaded_file, prompt=prompt)
+    response = video_processing_example(video_path=video.path(), prompt=prompt)
     gemini_output = GeminiOutput(GEMINI_OUTPUT_DIR, video.video_id, prompt, response)
     gemini_output.write_output()
 
@@ -49,12 +45,12 @@ def get_args() -> tuple[str, str]:
     return url, prompt
 
 
-def video_processing_example(downloaded_file: Path, prompt: str) -> str:
+def video_processing_example(video_path: Path, prompt: str) -> str:
     model = get_model()
     google_files_data = GoogleFilesMappingsJson(GOOGLE_FILES_JSON)
     google_files_manager = GoogleFilesManager(google_files_data)
     sample_video, uploaded = google_files_manager.get_file(
-        downloaded_file, mime_type="video/webm"
+        video_path, mime_type="video/webm"
     )
     if uploaded:
         print("Waiting on video to be processed")
@@ -67,6 +63,7 @@ def video_processing_example(downloaded_file: Path, prompt: str) -> str:
     response = model.generate_content(
         [sample_video, prompt], request_options={"timeout": 600}
     )
+
     summary = Mediator.clean1(response.text)
     MarkdownPrinter(summary).print_with_glow()
 

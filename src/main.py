@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-from output_handlers.markdown_printer import MarkdownPrinter
 from samples.video_example import main as run
 
 BASE_DIR = Path(__file__).parent
