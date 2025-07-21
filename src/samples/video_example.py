@@ -18,29 +18,26 @@ from output_handlers import GeminiOutput
 from output_handlers.markdown_printer import MarkdownPrinter
 from samples.prompts import Mediator
 from video.video_factory import VideoFactory
-from video.youtube_video import YoutubeVideo
 
 
 def main():
     url, prompt = get_args()
-
     video_factory = VideoFactory(YOUTUBE_DOWNLOAD_FOLDER)
     video = video_factory.create_video(url)
 
-    response = video_processing_example(video_path=video.path(), prompt=prompt)
+    response = video_processing_example(video_path=video.path, prompt=prompt)
     gemini_output = GeminiOutput(GEMINI_OUTPUT_DIR, video.video_id, prompt, response)
     gemini_output.write_output()
 
 
 def get_args() -> tuple[str, str]:
+    if len(sys.argv) < 2:
+        print(
+            "Usage: python video_example.py <youtube_url_or_local_video_path> [prompt]"
+        )
+        sys.exit(1)
     prompt = Mediator.prompt1()
-    url = SAMPLE_YOUTUBE_VIDEO
-
-    for arg in sys.argv[1:]:
-        if arg.startswith("https"):
-            url = arg
-        else:
-            prompt = arg
+    url = sys.argv[1]
 
     return url, prompt
 

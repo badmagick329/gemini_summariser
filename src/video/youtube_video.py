@@ -28,13 +28,15 @@ class YoutubeVideo(BaseVideo):
     def download(self) -> DownloadStatus:
         return self._downloader.download()
 
+    @property
     def path(self) -> Path:
         downloaded_file = self._downloader.downloaded_file()
         if downloaded_file is None:
             raise ValueError("File not downloaded")
         return downloaded_file
 
-    def is_youtube_url(self, url: str) -> bool:
+    @staticmethod
+    def is_youtube_url(url: str) -> bool:
         return "youtube.com/watch?v" in url or "youtu.be/" in url
 
     @property

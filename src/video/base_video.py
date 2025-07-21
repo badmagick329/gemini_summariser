@@ -3,6 +3,7 @@ from pathlib import Path
 
 
 class BaseVideo(ABC):
+    @property
     @abstractmethod
     def path(self) -> Path:
         raise NotImplementedError("Subclasses must implement the path method")

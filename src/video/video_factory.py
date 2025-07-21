@@ -1,6 +1,9 @@
 from pathlib import Path
 
+from downloader import DownloadStatus
+
 from .base_video import BaseVideo
+from .local_video import LocalVideo
 from .youtube_video import YoutubeVideo
 
 
@@ -11,15 +14,20 @@ class VideoFactory:
         self._output_dir = output_dir
 
     def create_video(self, input: str) -> BaseVideo:
-        youtube_video = YoutubeVideo(input, self._output_dir)
+        if YoutubeVideo.is_youtube_url(input):
+            youtube_video = YoutubeVideo(input, self._output_dir)
 
-        print("Downloding youtube video...")
-        download_status = youtube_video.download()
-        if download_status == "ERROR":
-            raise ValueError(f"Error downloading video: {input}")
-        print(download_status)
-        print(youtube_video.path())
-        if youtube_video.path() is None:
-            raise ValueError("Error downloading file")
+            print("Downloding youtube video...")
+            download_status = youtube_video.download()
+            if download_status == DownloadStatus.ERROR:
+                raise ValueError(f"Error downloading video: {input}")
+            print(download_status)
+            print(youtube_video.path)
 
-        return youtube_video
+            return youtube_video
+
+        path = Path(input)
+        if path.is_file():
+            return LocalVideo(path)
+
+        raise ValueError(f"Input is not a local file or a youtube video: {input}")
