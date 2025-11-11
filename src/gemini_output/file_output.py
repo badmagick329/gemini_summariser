@@ -1,7 +1,9 @@
 from pathlib import Path
 
+from gemini_output import BaseOutput
 
-class GeminiOutput:
+
+class GeminiOutput(BaseOutput):
     _output_dir: Path
     _output_file: Path | None
     _file_id: str
@@ -20,7 +22,7 @@ class GeminiOutput:
         self._prompt = prompt
         self._response = response
 
-    def write_output(self):
+    def write(self):
         with open(self.output_file, "w", encoding="utf-8") as f:
             f.write(self.file_output)
 

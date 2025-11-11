@@ -1,4 +1,4 @@
-class Mediator:
+class Prompts:
     @staticmethod
     def prompt1():
         return """<Question>
