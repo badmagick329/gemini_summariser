@@ -124,35 +124,76 @@ You can modify settings in `src/config.py`:
 ```md
 # Creator
 
-The creator of the video is Rick Astley, as he is the primary performer and vocalist in the music video for his song "Never Gonna Give You Up."
+The creator of the video is Rick Astley, as he is the primary performer and
+vocalist in the music video for his song "Never Gonna Give You Up."
 
 # Topic Discussed
 
-The main topic discussed in the video, through the lyrics of the song "Never Gonna Give You Up," is unwavering love, commitment, and loyalty in a romantic relationship. The singer expresses his deep feelings and makes strong assurances that he will always be there for his beloved, promising never to betray, abandon, or hurt them.
+The main topic discussed in the video, through the lyrics of the song "Never
+Gonna Give You Up," is unwavering love, commitment, and loyalty in a romantic
+relationship. The singer expresses his deep feelings and makes strong assurances
+that he will always be there for his beloved, promising never to betray,
+abandon, or hurt them.
 
 # Key points
 
-- **Declaration of Mutual Understanding:** The song begins by stating, "We're no strangers to love, You know the rules and so do I." This suggests an established connection and a shared understanding of what love entails between the two individuals.
-- **Desire for Commitment:** The singer expresses a clear intention for a serious and lasting relationship with the line, "A full commitment's what I'm thinking of." He emphasizes that he wants the other person to fully comprehend his feelings.
-- **Uniqueness of His Love:** He asserts the special nature of his commitment by saying, "You wouldn't get this from any other guy," implying that his dedication is singular and unparalleled.
-- **Core Promises of Loyalty and Support (The Chorus):** The most prominent key points are the repeated pledges of steadfastness:
+- **Declaration of Mutual Understanding:** The song begins by stating, "We're no
+  strangers to love, You know the rules and so do I." This suggests an established
+  connection and a shared understanding of what love entails between the two
+  individuals.
+- **Desire for Commitment:** The singer expresses a clear intention for a
+  serious and lasting relationship with the line, "A full commitment's what I'm
+  thinking of." He emphasizes that he wants the other person to fully comprehend
+  his feelings.
+- **Uniqueness of His Love:** He asserts the special nature of his commitment by
+  saying, "You wouldn't get this from any other guy," implying that his dedication
+  is singular and unparalleled.
+- **Core Promises of Loyalty and Support (The Chorus):** The most prominent key
+  points are the repeated pledges of steadfastness:
   - "Never gonna give you up" (will not abandon)
   - "Never gonna let you down" (will always be reliable)
   - "Never gonna run around and desert you" (will remain faithful)
   - "Never gonna make you cry" (will protect from sadness)
   - "Never gonna say goodbye" (will stay forever)
   - "Never gonna tell a lie and hurt you" (will be honest and caring)
-- **Acknowledgment of Unexpressed Feelings:** The song alludes to an unspoken understanding between them, "We've known each other for so long, Your heart's been aching but you're too shy to say it, Inside we both know what's been going on." This suggests a deep, intuitive connection even if feelings haven't been fully vocalized by the other person.
-- **Openness and Transparency:** The singer encourages the other person to recognize his genuine intentions: "And if you ask me how I'm feeling, Don't tell me you're too blind to see." He wants his feelings to be clear and reciprocated.
+- **Acknowledgment of Unexpressed Feelings:** The song alludes to an unspoken
+  understanding between them, "We've known each other for so long, Your heart's
+  been aching but you're too shy to say it, Inside we both know what's been going
+  on." This suggests a deep, intuitive connection even if feelings haven't been
+  fully vocalized by the other person.
+- **Openness and Transparency:** The singer encourages the other person to
+  recognize his genuine intentions: "And if you ask me how I'm feeling, Don't tell
+  me you're too blind to see." He wants his feelings to be clear and reciprocated.
 
 # Important Highlight
 
-The most important aspect of this video, beyond its original purpose as a music video, is its iconic status as an internet meme known as "Rickrolling." This phenomenon involves tricking someone into clicking a hyperlink that unexpectedly leads to the music video for "Never Gonna Give You Up." The video's catchy tune, Rick Astley's distinctive dance moves, vibrant red hair, and the somewhat earnest delivery of the lyrics have all contributed to its massive cultural impact as a form of bait-and-switch humor. The various scene changes, from a formal church setting to an urban underpass and a chain-link fence, also add to its unique and memorable visual style, which is often parodied or referenced in internet culture.
+The most important aspect of this video, beyond its original purpose as a music
+video, is its iconic status as an internet meme known as "Rickrolling." This
+phenomenon involves tricking someone into clicking a hyperlink that unexpectedly
+leads to the music video for "Never Gonna Give You Up." The video's catchy tune,
+Rick Astley's distinctive dance moves, vibrant red hair, and the somewhat
+earnest delivery of the lyrics have all contributed to its massive cultural
+impact as a form of bait-and-switch humor. The various scene changes, from a
+formal church setting to an urban underpass and a chain-link fence, also add to
+its unique and memorable visual style, which is often parodied or referenced in
+internet culture.
 
 # Takeaways
 
-- **The Power of Unconditional Commitment:** The song provides a clear lyrical example of expressing steadfast love and loyalty, which are universally valued themes in relationships. It showcases how simple, direct promises can convey a powerful message of dedication.
-- **Understanding Internet Meme Culture:** For those unfamiliar, this video serves as a prime example of a "Rickroll," which is a foundational internet meme. Learning about Rickrolling helps in understanding how viral content can originate, evolve, and become deeply embedded in online communication and culture, often re-contextualizing original media for humorous purposes.
-- **1980s Pop Music Aesthetics:** The video itself is a great snapshot of late 1980s music video production. From the fashion choices (blazers, striped shirts, trench coats, sunglasses) to the energetic, somewhat stylized dance routines and varying sets, it offers insight into the visual trends of that era in pop music.
-- **The Enduring Appeal of a Catchy Tune:** Despite being released in 1987, the song's melody and chorus remain highly recognizable and enjoyable, demonstrating the lasting impact of well-crafted pop music.
+- **The Power of Unconditional Commitment:** The song provides a clear lyrical
+  example of expressing steadfast love and loyalty, which are universally valued
+  themes in relationships. It showcases how simple, direct promises can convey a
+  powerful message of dedication.
+- **Understanding Internet Meme Culture:** For those unfamiliar, this video
+  serves as a prime example of a "Rickroll," which is a foundational internet
+  meme. Learning about Rickrolling helps in understanding how viral content can
+  originate, evolve, and become deeply embedded in online communication and
+  culture, often re-contextualizing original media for humorous purposes.
+- **1980s Pop Music Aesthetics:** The video itself is a great snapshot of late
+  1980s music video production. From the fashion choices (blazers, striped shirts,
+  trench coats, sunglasses) to the energetic, somewhat stylized dance routines and
+  varying sets, it offers insight into the visual trends of that era in pop music.
+- **The Enduring Appeal of a Catchy Tune:** Despite being released in 1987, the
+  song's melody and chorus remain highly recognizable and enjoyable, demonstrating
+  the lasting impact of well-crafted pop music.
 ```
