@@ -33,9 +33,7 @@ def main():
 
 def get_args() -> tuple[str, str]:
     if len(sys.argv) < 2:
-        print(
-            "Usage: python video_example.py <youtube_url_or_local_video_path> [prompt]"
-        )
+        print("Usage: uv run ./src/main.py <youtube_url_or_local_video_path> [prompt]")
         sys.exit(1)
     prompt = " ".join(sys.argv[2:]) if len(sys.argv) > 2 else Prompts.prompt1()
     url = sys.argv[1]
