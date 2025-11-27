@@ -37,7 +37,7 @@ A command-line tool that uses Google's Gemini AI to summarise videos. Works with
 2. **Clone the repository**:
 
    ```sh
-   git clone <repository-url>
+   git clone https://github.com/badmagick329/gemini_summariser
    cd geminisummariser
    ```
 
