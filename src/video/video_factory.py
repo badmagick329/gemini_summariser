@@ -17,12 +17,11 @@ class VideoFactory:
         if YoutubeVideo.is_youtube_url(input):
             youtube_video = YoutubeVideo(input, self._output_dir)
 
-            print("Downloding youtube video...")
+            print("Downloading YouTube video...")
             download_status = youtube_video.download()
             if download_status == DownloadStatus.ERROR:
                 raise ValueError(f"Error downloading video: {input}")
             print(download_status)
-            print(youtube_video.path)
 
             return youtube_video
 

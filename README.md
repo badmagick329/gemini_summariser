@@ -91,6 +91,12 @@ uv run ./src/main.py "/path/to/my_video.mp4"
 uv run ./src/main.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ" "Give me a brief 3-bullet summary"
 ```
 
+**Create a summary without starting interactive Q&A:**
+
+```sh
+uv run ./src/main.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --no-chat
+```
+
 ### Default Prompt
 
 When no custom prompt is provided, the tool generates a comprehensive summary in markdown format that includes:
@@ -118,6 +124,33 @@ You can modify settings in `src/config.py`:
 
 - `GEMINI_MODEL` - The Gemini model to use (default: `gemini-2.5-flash`)
 - Output and cache directories
+
+### YouTube downloads
+
+The app detects `yt-dlp` from `PATH` on Windows, Linux, and macOS. On Windows
+it prefers `yt-dlp.exe` and never calls a `.bat`/`.cmd` shim, avoiding
+PowerShell/CMD escaping problems with output templates such as
+`%(title)s.%(ext)s`. If no executable is found, it also supports a `yt_dlp`
+module installed in the same Python environment as the app.
+
+Set the following optional values in `.env` when YouTube requires them:
+
+```dotenv
+# Optional: explicitly select a native executable when multiple versions exist.
+# Windows: C:\path\to\yt-dlp.exe
+# Linux/macOS: /usr/local/bin/yt-dlp
+YTDLP_EXECUTABLE=
+YTDLP_COOKIES_FILE=/path/to/youtube-cookies.txt
+YTDLP_JS_RUNTIMES=deno
+YTDLP_FORMAT=bv*+ba/b
+YTDLP_OUTPUT_TEMPLATE=%(upload_date>%y%m%d)s %(title)s.%(ext)s
+```
+
+Downloaded paths are recorded in `data/videos/.downloads.json`, so a custom
+output template does not prevent the app from finding a video on later runs.
+For unusual future workarounds, use `YTDLP_EXTRA_ARGS` as a JSON array (for
+example `YTDLP_EXTRA_ARGS=["--extractor-args", "youtube:player_client=web"]`)
+or set `YTDLP_CONFIG_LOCATION` to a yt-dlp configuration file.
 
 ## Summary Example
 
