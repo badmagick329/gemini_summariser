@@ -97,6 +97,25 @@ uv run ./src/main.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ" "Give me a br
 uv run ./src/main.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --no-chat
 ```
 
+### Cleanup
+
+Downloaded YouTube videos are a local cache. Preview a cleanup before deleting
+anything:
+
+```sh
+uv run ./src/main.py cleanup
+```
+
+By default it targets completed downloads older than 7 days, partial downloads
+older than 1 day, and stale mappings for those app-managed downloads. Markdown
+summaries are preserved. Add `--apply` to delete the planned files, change the
+retention period with `--days`, or include old summaries explicitly:
+
+```sh
+uv run ./src/main.py cleanup --apply --days 14
+uv run ./src/main.py cleanup --apply --outputs --days 90
+```
+
 ### Default Prompt
 
 When no custom prompt is provided, the tool generates a comprehensive summary in markdown format that includes:
