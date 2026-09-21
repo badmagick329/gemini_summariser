@@ -32,6 +32,10 @@ class SummaryRequestTests(unittest.TestCase):
         self.assertIn("degrees Celsius", request)
         self.assertIn("dates", request)
         self.assertIn("read aloud", request)
+        self.assertIn("varied openings", request)
+        self.assertIn("one main idea", request)
+        self.assertIn('"First", "Next", and "Finally"', request)
+        self.assertIn("comma-separated clauses", request)
 
 
 class CustomRequestTests(unittest.TestCase):
@@ -47,7 +51,8 @@ class CustomRequestTests(unittest.TestCase):
 
         self.assertIn("Give me three bullets", request)
         self.assertIn('name="voice"', request)
-        self.assertIn('"First,"', request)
+        self.assertIn("vary sentence openings", request)
+        self.assertIn("mechanical transitions", request)
 
     def test_the_two_formats_produce_different_contracts(self):
         markdown = Prompts.custom_request("p", OutputFormat.MARKDOWN)

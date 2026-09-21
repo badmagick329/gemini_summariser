@@ -58,14 +58,14 @@ class VoiceRendererTests(unittest.TestCase):
             takeaways=("Small changes add up.",),
         )
 
-    def test_uses_spoken_transitions(self):
+    def test_avoids_mechanical_list_transitions(self):
         rendered = render_summary(self.summary, OutputFormat.VOICE)
 
-        self.assertIn("First,", rendered)
-        self.assertIn("Finally,", rendered)
+        self.assertNotIn("First,", rendered)
         self.assertNotIn("Next,", rendered)
+        self.assertNotIn("Finally,", rendered)
 
-    def test_uses_next_for_middle_points(self):
+    def test_joins_key_points_as_natural_sentences(self):
         summary = VideoSummary(
             creator="Jane Smith",
             topic="energy",
@@ -76,16 +76,14 @@ class VoiceRendererTests(unittest.TestCase):
 
         rendered = render_summary(summary, OutputFormat.VOICE)
 
-        self.assertIn("First, one.", rendered)
-        self.assertIn("Next, two.", rendered)
-        self.assertIn("Finally, three.", rendered)
+        self.assertIn("one. two. three.", rendered)
 
     def test_contains_no_markdown_syntax(self):
         rendered = render_summary(self.summary, OutputFormat.VOICE)
 
         assert_no_markdown_syntax(self, rendered)
 
-    def test_does_not_glue_a_sentence_onto_a_that_clause(self):
+    def test_does_not_announce_the_highlight_as_a_section(self):
         summary = VideoSummary(
             creator="Jane Smith",
             topic="energy",
@@ -96,14 +94,10 @@ class VoiceRendererTests(unittest.TestCase):
 
         rendered = render_summary(summary, OutputFormat.VOICE)
 
-        self.assertNotIn("is that The", rendered)
-        self.assertIn(
-            "The most important highlight is this. "
-            "The presenter recommends improving insulation first.",
-            rendered,
-        )
+        self.assertNotIn("The most important highlight is this", rendered)
+        self.assertIn("The presenter recommends improving insulation first.", rendered)
 
-    def test_embeds_a_fragment_after_that_cleanly(self):
+    def test_turns_a_highlight_fragment_into_a_sentence_without_a_bridge(self):
         summary = VideoSummary(
             creator="Jane Smith",
             topic="energy",
@@ -114,11 +108,9 @@ class VoiceRendererTests(unittest.TestCase):
 
         rendered = render_summary(summary, OutputFormat.VOICE)
 
-        self.assertIn(
-            "The most important highlight is that improving insulation comes first.",
-            rendered,
-        )
-        self.assertIn("First, insulation prevents heat loss.", rendered)
+        self.assertIn("improving insulation comes first.", rendered)
+        self.assertNotIn("The most important highlight", rendered)
+        self.assertIn("insulation prevents heat loss.", rendered)
 
     def test_handles_complete_sentence_key_points(self):
         summary = VideoSummary(
@@ -131,10 +123,11 @@ class VoiceRendererTests(unittest.TestCase):
 
         rendered = render_summary(summary, OutputFormat.VOICE)
 
-        self.assertIn("First, the presenter explains insulation.", rendered)
-        self.assertIn("Finally, she compares systems.", rendered)
+        self.assertIn(
+            "The presenter explains insulation. She compares systems.", rendered
+        )
 
-    def test_preserves_proper_names_and_acronyms_after_a_transition(self):
+    def test_preserves_proper_names_and_acronyms(self):
         summary = VideoSummary(
             creator="Jane Smith",
             topic="energy",
@@ -145,11 +138,10 @@ class VoiceRendererTests(unittest.TestCase):
 
         rendered = render_summary(summary, OutputFormat.VOICE)
 
-        self.assertIn("First, OpenAI released a model.", rendered)
-        self.assertIn("Finally, Gemini explains the topic.", rendered)
-        self.assertIn("First, US-based research is growing.", rendered)
+        self.assertIn("OpenAI released a model. Gemini explains the topic.", rendered)
+        self.assertIn("US-based research is growing.", rendered)
 
-    def test_lowercases_only_ordinary_sentence_leading_words(self):
+    def test_closes_without_announcing_a_takeaway_section(self):
         summary = VideoSummary(
             creator="Jane Smith",
             topic="energy",
@@ -160,9 +152,25 @@ class VoiceRendererTests(unittest.TestCase):
 
         rendered = render_summary(summary, OutputFormat.VOICE)
 
-        self.assertIn("First, the presenter explains insulation.", rendered)
-        self.assertIn("Finally, she compares systems.", rendered)
-        self.assertIn("First, the results are clear.", rendered)
+        self.assertIn(
+            "The presenter explains insulation. She compares systems.", rendered
+        )
+        self.assertIn("The results are clear.", rendered)
+        self.assertNotIn("Overall", rendered)
+        self.assertNotIn("takeaways are", rendered)
+
+    def test_treats_a_punctuated_topic_as_a_phrase(self):
+        summary = VideoSummary(
+            creator="Jane Smith",
+            topic="household energy efficiency.",
+            key_points=("Insulation prevents heat loss.",),
+            important_highlight="Improve insulation first.",
+            takeaways=("Small changes add up.",),
+        )
+
+        rendered = render_summary(summary, OutputFormat.VOICE)
+
+        self.assertIn("It focuses on household energy efficiency.", rendered)
 
     def test_preserves_the_summary_facts(self):
         rendered = render_summary(self.summary, OutputFormat.VOICE)
@@ -175,7 +183,11 @@ class VoiceRendererTests(unittest.TestCase):
         rendered = render_summary(self.summary, OutputFormat.VOICE)
 
         self.assertGreaterEqual(len(rendered.split("\n\n")), 3)
-        self.assertIn("This video was created by Jane Smith", rendered)
+        self.assertIn(
+            "This video was created by Jane Smith. "
+            "It focuses on household energy efficiency.",
+            rendered,
+        )
 
 
 if __name__ == "__main__":

@@ -165,9 +165,10 @@ Summaries are saved in the `data/gemini_outputs` directory. The filename include
 - **Voice** (`--format voice`) is saved as a `.txt` file containing narration only. It is printed to the console as plain text and is not sent through glow.
 
 Voice output is plain, spoken-style prose. It uses short sentences and paragraphs,
-and turns headings and lists into spoken transitions. The shared structured content
-is requested with clear, naturally readable numbers, dates, symbols, and units, and
-the voice renderer arranges it for reading aloud. It does not synthesize audio.
+avoids mechanical list transitions, and varies sentence openings. The shared
+structured content is requested with clear, naturally readable numbers, dates,
+symbols, and units, and the voice renderer arranges it for reading aloud. It does
+not synthesize audio.
 
 ## Configuration
 

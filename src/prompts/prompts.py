@@ -27,8 +27,8 @@ Carefully watch and understand the video and provide:
 Respond with a single JSON object and nothing else. Do not use Markdown, code fences, or commentary.
 The object must match this shape:
 {
-  "creator": "who created the video, or unknown",
-  "topic": "the main topic",
+  "creator": "the creator or channel name, or the phrase an unidentified creator",
+  "topic": "a concise topic phrase, not a complete sentence",
   "key_points": ["key point 1", "key point 2"],
   "important_highlight": "the single most important thing to mention",
   "takeaways": ["useful thing to know 1", "useful thing to know 2"]
@@ -47,6 +47,10 @@ Every field is required. Use non-empty strings, and at least one entry in each l
 - Write symbols and units in clear words, such as "percent" and "degrees Celsius".
 - Use unambiguous, naturally readable dates.
 - Keep numeric expressions clear when they are read aloud.
+- Write complete sentences with varied openings so adjacent points flow naturally.
+- Keep each sentence focused on one main idea and preferably between twelve and twenty-five words.
+- Avoid mechanical list transitions such as "First", "Next", and "Finally".
+- Avoid semicolons, em dashes, parentheses, and long chains of comma-separated clauses.
 </QualityRequirements>"""
 
     @staticmethod
@@ -62,10 +66,12 @@ Every field is required. Use non-empty strings, and at least one entry in each l
         return """<OutputFormat name="voice">
 - Write narration-ready plain text meant to be read aloud, with no visual formatting.
 - Use short, complete sentences and short paragraphs.
-- Replace headings with spoken transitions, and replace bullet lists with transitions such as "First,", "Next,", and "Finally.".
+- Make each idea flow naturally into the next and vary sentence openings.
+- Do not announce sections or use mechanical transitions such as "First", "Next", and "Finally".
 - Do not use Markdown, headings, bullet markers, tables, code fences, emojis, or raw URLs.
 - Avoid phrases such as "as listed below".
 - Write numbers, dates, symbols, abbreviations, and units the way a person would say them where practical.
+- Prefer one main idea per sentence, and avoid semicolons, em dashes, parentheses, and comma-heavy sentences.
 - Use punctuation and paragraph breaks to create natural pauses.
 </OutputFormat>"""
 
