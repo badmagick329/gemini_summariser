@@ -14,13 +14,20 @@ if str(BASE_DIR) not in sys.path:
     sys.path.append(str(BASE_DIR))
 
 
-from config import Config
 from cleanup import CleanupManager
+from config import Config
 from exceptions import GeminiGenerationBlockedError, GeminiGenerationError
 from gemini_output import ConsoleOutput, GeminiOutput
 from google_files import GoogleFilesManager, GoogleFilesMappingsJson
+from output_format import OutputFormat
 from prompts import Prompts
+from renderers import render_summary
+from summary import SUMMARY_SCHEMA, parse_summary
 from video import VideoFactory
+
+SUMMARY_CONFIG = genai.GenerationConfig(
+    response_mime_type="application/json", response_schema=SUMMARY_SCHEMA
+)
 
 
 def main():
@@ -31,13 +38,25 @@ def main():
     if args.command == "cleanup":
         return cleanup(args)
 
-    url, prompt, interactive = args.video, args.prompt, not args.no_chat
+    url, interactive, output_format = args.video, not args.no_chat, args.output_format
+    custom_prompt = args.prompt
+    if custom_prompt is None:
+        request_prompt = Prompts.summary_request()
+        stored_prompt = request_prompt
+    else:
+        request_prompt = Prompts.custom_request(custom_prompt, output_format)
+        stored_prompt = custom_prompt
+
     video_factory = VideoFactory(Config.YOUTUBE_DOWNLOAD_FOLDER)
     video = video_factory.create_video(url)
 
     try:
         response = summarise_video(
-            video_path=video.path, prompt=prompt, interactive=interactive
+            video_path=video.path,
+            prompt=request_prompt,
+            output_format=output_format,
+            structured=custom_prompt is None,
+            interactive=interactive,
         )
     except GeminiGenerationBlockedError as error:
         print(f"Gemini blocked this video request: {error.reason}.")
@@ -50,7 +69,7 @@ def main():
         return 4
 
     gemini_output = GeminiOutput(
-        Config.GEMINI_OUTPUT_DIR, video.video_id, prompt, response
+        Config.GEMINI_OUTPUT_DIR, video.video_id, stored_prompt, response, output_format
     )
     gemini_output.write()
     return 0
@@ -70,7 +89,7 @@ def get_args() -> argparse.Namespace:
             "--part-days", type=positive_int, default=1, help="Age of partial downloads (default: 1)."
         )
         parser.add_argument(
-            "--outputs", action="store_true", help="Also remove old Markdown summaries."
+            "--outputs", action="store_true", help="Also remove old saved summaries."
         )
         args = parser.parse_args()
         args.command = "cleanup"
@@ -90,9 +109,16 @@ def get_args() -> argparse.Namespace:
         action="store_true",
         help="Generate and save the summary without starting follow-up Q&A.",
     )
+    parser.add_argument(
+        "--format",
+        choices=[output_format.value for output_format in OutputFormat],
+        default=OutputFormat.MARKDOWN.value,
+        help="Output format (default: markdown).",
+    )
     args = parser.parse_args()
     args.command = "summarise"
-    args.prompt = " ".join(args.prompt) if args.prompt else Prompts.prompt1()
+    args.output_format = OutputFormat(args.format)
+    args.prompt = " ".join(args.prompt) if args.prompt else None
     return args
 
 
@@ -130,7 +156,13 @@ def format_bytes(size: int) -> str:
     raise AssertionError("unreachable")
 
 
-def summarise_video(video_path: Path, prompt: str, interactive: bool = True) -> str:
+def summarise_video(
+    video_path: Path,
+    prompt: str,
+    output_format: OutputFormat = OutputFormat.MARKDOWN,
+    structured: bool = False,
+    interactive: bool = True,
+) -> str:
     model = get_model()
     google_files_data = GoogleFilesMappingsJson(Config.GOOGLE_FILES_JSON)
     google_files_manager = GoogleFilesManager(google_files_data)
@@ -146,23 +178,30 @@ def summarise_video(video_path: Path, prompt: str, interactive: bool = True) -> 
             sample_video = genai.get_file(sample_video.name)
 
     print("Making LLM inference request...")
-    response = model.generate_content(
-        [sample_video, prompt], request_options={"timeout": 600}
-    )
-
-    summary = Prompts.clean1(get_response_text(response))
-    ConsoleOutput(summary).write()
+    if structured:
+        response = model.generate_content(
+            [sample_video, prompt],
+            generation_config=SUMMARY_CONFIG,
+            request_options={"timeout": 600},
+        )
+        summary = render_summary(parse_summary(get_response_text(response)), output_format)
+    else:
+        response = model.generate_content(
+            [sample_video, prompt], request_options={"timeout": 600}
+        )
+        summary = get_response_text(response)
+    ConsoleOutput(summary, output_format).write()
 
     while interactive:
         question = input("Ask a question about the video or type q to quit\n")
         if question == "q":
             break
-        new_prompt = f"You previously answered this in response to this video:\n{summary}\n\nNow answer this: {question}"
+        new_prompt = Prompts.follow_up(summary, question, output_format)
         response = model.generate_content(
             [sample_video, new_prompt], request_options={"timeout": 600}
         )
         try:
-            ConsoleOutput(get_response_text(response)).write()
+            ConsoleOutput(get_response_text(response), output_format).write()
         except GeminiGenerationBlockedError as error:
             print(f"Gemini blocked that question: {error.reason}.")
 

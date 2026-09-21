@@ -1,15 +1,24 @@
 import subprocess
 
 from gemini_output import BaseOutput
+from output_format import OutputFormat
 
 
 class ConsoleOutput(BaseOutput):
-    _text: str
+    """Render Markdown through Glow but print voice narration verbatim."""
 
-    def __init__(self, text) -> None:
+    _text: str
+    _output_format: OutputFormat
+
+    def __init__(self, text: str, output_format: OutputFormat) -> None:
         self._text = text
+        self._output_format = output_format
 
     def write(self) -> None:
+        if self._output_format.is_voice:
+            print(self._text)
+            return
+
         try:
             subprocess.run(
                 ["glow"],

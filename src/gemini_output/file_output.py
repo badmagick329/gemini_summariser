@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from gemini_output import BaseOutput
+from output_format import OutputFormat
 
 
 class GeminiOutput(BaseOutput):
@@ -9,9 +10,15 @@ class GeminiOutput(BaseOutput):
     _file_id: str
     _prompt: str
     _response: str
+    _output_format: OutputFormat
 
     def __init__(
-        self, output_dir: Path, file_id: str, prompt: str, response: str
+        self,
+        output_dir: Path,
+        file_id: str,
+        prompt: str,
+        response: str,
+        output_format: OutputFormat,
     ) -> None:
         if output_dir.is_file():
             raise ValueError(f"{output_dir} is a file, not a directory")
@@ -21,6 +28,7 @@ class GeminiOutput(BaseOutput):
         self._file_id = file_id
         self._prompt = prompt
         self._response = response
+        self._output_format = output_format
 
     def write(self):
         with open(self.output_file, "w", encoding="utf-8") as f:
@@ -45,13 +53,16 @@ class GeminiOutput(BaseOutput):
 
         filename = (
             self._output_dir
-            / f"{self.file_id}_{self._alphanum_prompt_chars(self.prompt)}.md"
+            / f"{self.file_id}_{self._alphanum_prompt_chars(self.prompt)}"
+            f"{self._output_format.suffix}"
         )
         self._output_file = self._get_available_name(filename)
         return self._output_file
 
     @property
     def file_output(self) -> str:
+        if self._output_format.is_voice:
+            return self.response
         return f"# Prompt\n\n{self.prompt}\n\n# Response\n\n{self.response}"
 
     @staticmethod

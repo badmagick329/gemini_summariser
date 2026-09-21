@@ -9,6 +9,7 @@ A command-line tool that uses Google's Gemini AI to summarise videos. Works with
 - **Interactive Q&A**: Ask follow-up questions about the video after the initial summary
 - **Smart Caching**: Avoids re-uploading videos that have already been processed
 - **Markdown Output**: Summaries are saved as markdown files and displayed with rich formatting in the console
+- **Voice Output**: Summaries can be rendered as narration-ready plain text for text-to-speech tools
 
 ## Requirements
 
@@ -68,8 +69,10 @@ A command-line tool that uses Google's Gemini AI to summarise videos. Works with
 ## Usage
 
 ```
-uv run ./src/main.py <youtube_url_or_local_video_path> [prompt]
+uv run ./src/main.py <youtube_url_or_local_video_path> [prompt] [--format markdown|voice]
 ```
+
+`--format` selects the output style and defaults to `markdown`.
 
 ### Examples
 
@@ -91,11 +94,28 @@ uv run ./src/main.py "/path/to/my_video.mp4"
 uv run ./src/main.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ" "Give me a brief 3-bullet summary"
 ```
 
+**Generate narration-ready text instead of Markdown:**
+
+```sh
+uv run ./src/main.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --format voice
+```
+
 **Create a summary without starting interactive Q&A:**
 
 ```sh
 uv run ./src/main.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --no-chat
 ```
+
+### PowerShell wrapper
+
+The wrapper at `C:\scripts\gs.ps1` forwards all arguments, so the format option
+works through it unchanged:
+
+```powershell
+C:\scripts\gs.ps1 VIDEO --format voice
+C:\scripts\gs.ps1 VIDEO --format markdown
+```
+
 
 ### Cleanup
 
@@ -118,16 +138,20 @@ uv run ./src/main.py cleanup --apply --outputs --days 90
 
 ### Default Prompt
 
-When no custom prompt is provided, the tool generates a comprehensive summary in markdown format that includes:
+When no custom prompt is provided, the tool generates a comprehensive summary that includes:
 
 - Information on the creator
 - Topics Discussed
 - Key insights and findings
 - Conclusions and takeaways from the video
 
+The built-in response is requested as structured content against a shared schema
+and then rendered by the selected renderer. Each run makes a new model request,
+so the summary is generated afresh every time.
+
 ### Interactive Mode
 
-After the initial summary is generated, you can ask follow-up questions about the video. Type your question and press Enter, or type `q` to quit.
+After the initial summary is generated, you can ask follow-up questions about the video. Type your question and press Enter, or type `q` to quit. Follow-up answers use the selected format but are only shown in the console; they are not saved.
 
 ## Limitations
 
@@ -135,7 +159,15 @@ After the initial summary is generated, you can ask follow-up questions about th
 
 ## Output
 
-Summaries are saved as markdown files in the `data/gemini_outputs` directory. The filename includes the video ID and a hash of the prompt used.
+Summaries are saved in the `data/gemini_outputs` directory. The filename includes the video ID and a hash of the prompt used.
+
+- **Markdown** (`--format markdown`, the default) is saved as a `.md` file and rendered in the console with [glow](https://github.com/charmbracelet/glow) when available.
+- **Voice** (`--format voice`) is saved as a `.txt` file containing narration only. It is printed to the console as plain text and is not sent through glow.
+
+Voice output is plain, spoken-style prose. It uses short sentences and paragraphs,
+and turns headings and lists into spoken transitions. The shared structured content
+is requested with clear, naturally readable numbers, dates, symbols, and units, and
+the voice renderer arranges it for reading aloud. It does not synthesize audio.
 
 ## Configuration
 
