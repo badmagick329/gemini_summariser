@@ -9,7 +9,7 @@ class Config:
     YOUTUBE_DOWNLOAD_FOLDER = DATA_DIR / "videos"
     YOUTUBE_DOWNLOADS_MANIFEST = YOUTUBE_DOWNLOAD_FOLDER / ".downloads.json"
     GEMINI_OUTPUT_DIR = DATA_DIR / "gemini_outputs"
-    GEMINI_MODEL = "gemini-2.5-flash"
+    GEMINI_MODEL = "gemini-3.8-flash"
 
     @classmethod
     def init(cls):

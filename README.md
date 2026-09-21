@@ -141,7 +141,7 @@ Summaries are saved as markdown files in the `data/gemini_outputs` directory. Th
 
 You can modify settings in `src/config.py`:
 
-- `GEMINI_MODEL` - The Gemini model to use (default: `gemini-2.5-flash`)
+- `GEMINI_MODEL` - The Gemini model to use (default: `gemini-3.8-flash`)
 - Output and cache directories
 
 ### YouTube downloads
