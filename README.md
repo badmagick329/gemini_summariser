@@ -159,7 +159,7 @@ After the initial summary is generated, you can ask follow-up questions about th
 
 ## Output
 
-Summaries are saved in the `data/gemini_outputs` directory. The filename includes the video ID and a hash of the prompt used.
+Summaries are saved in the `data/gemini_outputs` directory, including for local videos. Filenames contain a safe video identifier, a short hash of the original identifier, and the prompt text.
 
 - **Markdown** (`--format markdown`, the default) is saved as a `.md` file and rendered in the console with [glow](https://github.com/charmbracelet/glow) when available.
 - **Voice** (`--format voice`) is saved as a `.txt` file containing narration only. It is printed to the console as plain text and is not sent through glow.

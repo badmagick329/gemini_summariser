@@ -49,6 +49,19 @@ class DownloadCommandTests(unittest.TestCase):
                 Downloader("video-id", download_dir).downloaded_file(), saved_file
             )
 
+    def test_partial_download_is_not_reused_as_completed_video(self):
+        with tempfile.TemporaryDirectory() as directory:
+            download_dir = Path(directory)
+            partial = download_dir / "video-id.part"
+            partial.touch()
+            downloader = Downloader("video-id", download_dir)
+
+            self.assertIsNone(downloader.downloaded_file())
+            self.assertIsNone(downloader._new_downloaded_file(set()))
+
+            downloader._save_downloaded_file(partial)
+            self.assertIsNone(Downloader("video-id", download_dir).downloaded_file())
+
     def test_falls_back_to_the_current_python_module(self):
         with (
             patch.dict(os.environ, {}, clear=True),

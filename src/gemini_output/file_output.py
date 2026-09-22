@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 
 from gemini_output import BaseOutput
@@ -51,9 +52,14 @@ class GeminiOutput(BaseOutput):
         if self._output_file:
             return self._output_file
 
+        safe_id = "".join(
+            char if char.isascii() and (char.isalnum() or char in "-_") else "_"
+            for char in self.file_id
+        )[:48]
+        id_hash = hashlib.sha256(self.file_id.encode("utf-8")).hexdigest()[:12]
         filename = (
             self._output_dir
-            / f"{self.file_id}_{self._alphanum_prompt_chars(self.prompt)}"
+            / f"{safe_id}_{id_hash}_{self._alphanum_prompt_chars(self.prompt)}"
             f"{self._output_format.suffix}"
         )
         self._output_file = self._get_available_name(filename)

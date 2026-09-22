@@ -64,14 +64,22 @@ class Downloader:
                 saved_path = json.loads(manifest_file.read_text(encoding="utf-8")).get(
                     self._video_id
                 )
-                if saved_path and Path(saved_path).is_file():
+                if (
+                    saved_path
+                    and Path(saved_path).is_file()
+                    and not self._is_partial(Path(saved_path))
+                ):
                     self._output_file = Path(saved_path)
                     return self._output_file
             except (json.JSONDecodeError, OSError):
                 pass
 
         for file in self._output_dir.iterdir():
-            if (file.stem) == self._video_id:
+            if (
+                file.is_file()
+                and file.stem == self._video_id
+                and not self._is_partial(file)
+            ):
                 self._output_file = self._output_dir / f"{file.name}"
                 assert self._output_file.exists(), "Error setting output file"
                 return self._output_file
@@ -82,10 +90,17 @@ class Downloader:
         return [file for file in self._output_dir.iterdir() if file.is_file()]
 
     def _new_downloaded_file(self, known_files: set[Path]) -> Path | None:
-        new_files = [file for file in self._video_files() if file not in known_files]
+        new_files = [
+            file for file in self._video_files()
+            if file not in known_files and not self._is_partial(file)
+        ]
         if not new_files:
             return None
         return max(new_files, key=lambda file: file.stat().st_mtime).resolve()
+
+    @staticmethod
+    def _is_partial(path: Path) -> bool:
+        return path.suffix.lower() in {".part", ".ytdl"}
 
     def _save_downloaded_file(self, path: Path) -> None:
         manifest_file = self._output_dir / ".downloads.json"

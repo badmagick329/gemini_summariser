@@ -91,6 +91,20 @@ class FileOutputTests(unittest.TestCase):
         self.assertEqual(output.output_file.read_text(encoding="utf-8"), "spoken narration")
         self.assertNotIn("the prompt", output.output_file.read_text(encoding="utf-8"))
 
+    def test_absolute_local_video_id_stays_in_output_directory(self):
+        video = self.output_dir / "source" / "clip.mp4"
+        video.parent.mkdir()
+        output_dir = self.output_dir / "summaries"
+        output = GeminiOutput(
+            output_dir, str(video.resolve()), "prompt", "summary", OutputFormat.MARKDOWN
+        )
+
+        output.write()
+
+        self.assertEqual(output.output_file.parent, output_dir)
+        self.assertTrue(output.output_file.is_file())
+        self.assertEqual(list(video.parent.iterdir()), [])
+
 
 if __name__ == "__main__":
     unittest.main()
