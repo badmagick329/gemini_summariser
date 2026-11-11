@@ -5,8 +5,9 @@ import sys
 import time
 from pathlib import Path
 
-import google.generativeai as genai
 from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 
 BASE_DIR = Path(__file__).parent
 
@@ -25,9 +26,15 @@ from renderers import render_summary
 from summary import SUMMARY_SCHEMA, parse_summary
 from video import VideoFactory
 
-SUMMARY_CONFIG = genai.GenerationConfig(
-    response_mime_type="application/json", response_schema=SUMMARY_SCHEMA
+# Video requests can take minutes; the timeout is per request rather than on the
+# client so that large uploads are not cut off by it.
+_REQUEST_TIMEOUT = types.HttpOptions(timeout=600_000)
+SUMMARY_CONFIG = types.GenerateContentConfig(
+    response_mime_type="application/json",
+    response_schema=SUMMARY_SCHEMA,
+    http_options=_REQUEST_TIMEOUT,
 )
+TEXT_CONFIG = types.GenerateContentConfig(http_options=_REQUEST_TIMEOUT)
 
 
 def main():
@@ -149,10 +156,11 @@ def cleanup(args: argparse.Namespace) -> int:
 
 
 def format_bytes(size: int) -> str:
+    value = float(size)
     for unit in ("B", "KiB", "MiB", "GiB", "TiB"):
-        if size < 1024 or unit == "TiB":
-            return f"{size:.1f} {unit}"
-        size /= 1024
+        if value < 1024 or unit == "TiB":
+            return f"{value:.1f} {unit}"
+        value /= 1024
     raise AssertionError("unreachable")
 
 
@@ -163,32 +171,31 @@ def summarise_video(
     structured: bool = False,
     interactive: bool = True,
 ) -> str:
-    model = get_model()
+    client = get_client()
     google_files_data = GoogleFilesMappingsJson(Config.GOOGLE_FILES_JSON)
-    google_files_manager = GoogleFilesManager(google_files_data)
+    google_files_manager = GoogleFilesManager(google_files_data, client)
     mime_type = mimetypes.guess_type(video_path)[0] or "video/mp4"
     sample_video, uploaded = google_files_manager.get_file(
         video_path, mime_type=mime_type
     )
     if uploaded:
         print("Waiting on video to be processed")
-        while sample_video.state.name == "PROCESSING":
+        while sample_video.state == types.FileState.PROCESSING:
             print(".", end="", flush=True)
             time.sleep(10)
-            sample_video = genai.get_file(sample_video.name)
+            sample_video = client.files.get(name=str(sample_video.name))
+
+    def generate(contents: list, config: types.GenerateContentConfig):
+        return client.models.generate_content(
+            model=Config.GEMINI_MODEL, contents=contents, config=config
+        )
 
     print("Making LLM inference request...")
     if structured:
-        response = model.generate_content(
-            [sample_video, prompt],
-            generation_config=SUMMARY_CONFIG,
-            request_options={"timeout": 600},
-        )
+        response = generate([sample_video, prompt], SUMMARY_CONFIG)
         summary = render_summary(parse_summary(get_response_text(response)), output_format)
     else:
-        response = model.generate_content(
-            [sample_video, prompt], request_options={"timeout": 600}
-        )
+        response = generate([sample_video, prompt], TEXT_CONFIG)
         summary = get_response_text(response)
     ConsoleOutput(summary, output_format).write()
 
@@ -197,9 +204,7 @@ def summarise_video(
         if question == "q":
             break
         new_prompt = Prompts.follow_up(summary, question, output_format)
-        response = model.generate_content(
-            [sample_video, new_prompt], request_options={"timeout": 600}
-        )
+        response = generate([sample_video, new_prompt], TEXT_CONFIG)
         try:
             ConsoleOutput(get_response_text(response), output_format).write()
         except GeminiGenerationBlockedError as error:
@@ -220,16 +225,20 @@ def get_response_text(response) -> str:
     if not getattr(response, "candidates", None):
         raise GeminiGenerationError("the API returned no candidates and no block reason")
 
-    try:
-        return response.text
-    except ValueError as error:
-        raise GeminiGenerationError(str(error)) from error
+    # The SDK returns None rather than raising when the first candidate carries
+    # no text, typically because generation stopped early (safety, recitation).
+    text = response.text
+    if text is None:
+        finish_reason = getattr(response.candidates[0], "finish_reason", None)
+        reason = getattr(finish_reason, "name", finish_reason) or "unknown"
+        raise GeminiGenerationError(
+            f"the response contained no text (finish reason: {reason})"
+        )
+    return text
 
 
-def get_model():
-    load_dotenv()
-    genai.configure(api_key=os.environ["API_KEY"])
-    return genai.GenerativeModel(Config.GEMINI_MODEL)
+def get_client() -> genai.Client:
+    return genai.Client(api_key=os.environ["API_KEY"])
 
 
 if __name__ == "__main__":

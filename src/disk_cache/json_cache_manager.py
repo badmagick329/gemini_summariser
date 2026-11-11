@@ -48,7 +48,7 @@ class JsonCacheManager:
     def del_key(self, key: str) -> None:
         saved_value = self._cached_data.get(key)
         if saved_value is None:
-            return None
+            return
 
         self._del_path(Path(saved_value))
         del self._cached_data[key]

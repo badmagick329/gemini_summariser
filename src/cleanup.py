@@ -53,7 +53,7 @@ class CleanupManager:
         )
         stale_google_mapping_keys = tuple(
             local_path
-            for local_path in self._read_json(self._google_files_mapping).keys()
+            for local_path in self._read_json(self._google_files_mapping)
             if self._is_managed_video_path(Path(local_path))
             and (not Path(local_path).is_file() or Path(local_path).resolve() in deleted_video_paths)
         )
