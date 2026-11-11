@@ -49,6 +49,50 @@ class DownloadCommandTests(unittest.TestCase):
                 Downloader("video-id", download_dir).downloaded_file(), saved_file
             )
 
+    def test_manifest_path_outside_videos_directory_is_not_reused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            download_dir = Path(directory) / "videos"
+            outside = Path(directory) / "secret.mp4"
+            outside.touch()
+            downloader = Downloader("video-id", download_dir)
+
+            for saved_path in (outside, download_dir / ".." / "secret.mp4"):
+                with self.subTest(saved_path=saved_path):
+                    downloader._save_downloaded_file(saved_path)
+                    self.assertIsNone(Downloader("video-id", download_dir).downloaded_file())
+
+    def test_manifest_symlink_escaping_videos_directory_is_not_reused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            download_dir = Path(directory) / "videos"
+            outside = Path(directory) / "secret.mp4"
+            outside.touch()
+            downloader = Downloader("video-id", download_dir)
+            link = download_dir / "video-id.mp4"
+            try:
+                link.symlink_to(outside)
+            except OSError as error:
+                self.skipTest(f"cannot create symlinks here: {error}")
+
+            downloader._save_downloaded_file(link)
+
+            self.assertIsNone(Downloader("video-id", download_dir).downloaded_file())
+
+    def test_malformed_manifest_falls_back_to_the_video_id_file(self):
+        manifests = ('["not", "a", "mapping"]', '{"video-id": 42}', "not json")
+        for manifest in manifests:
+            with self.subTest(manifest=manifest), tempfile.TemporaryDirectory() as directory:
+                download_dir = Path(directory)
+                (download_dir / ".downloads.json").write_text(manifest, encoding="utf-8")
+                video = download_dir / "video-id.mp4"
+                video.touch()
+
+                self.assertEqual(Downloader("video-id", download_dir).downloaded_file(), video)
+
+                renamed = download_dir / "renamed.mp4"
+                video.rename(renamed)
+                Downloader("video-id", download_dir)._save_downloaded_file(renamed)
+                self.assertEqual(Downloader("video-id", download_dir).downloaded_file(), renamed)
+
     def test_partial_download_is_not_reused_as_completed_video(self):
         with tempfile.TemporaryDirectory() as directory:
             download_dir = Path(directory)

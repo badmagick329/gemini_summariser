@@ -58,30 +58,14 @@ class Downloader:
         if self._output_file:
             return self._output_file
 
-        manifest_file = self._output_dir / ".downloads.json"
-        if manifest_file.exists():
-            try:
-                saved_path = json.loads(manifest_file.read_text(encoding="utf-8")).get(
-                    self._video_id
-                )
-                if (
-                    saved_path
-                    and Path(saved_path).is_file()
-                    and not self._is_partial(Path(saved_path))
-                ):
-                    self._output_file = Path(saved_path)
-                    return self._output_file
-            except (json.JSONDecodeError, OSError):
-                pass
+        saved_path = self._read_manifest().get(self._video_id)
+        if isinstance(saved_path, str) and self._is_reusable_download(Path(saved_path)):
+            self._output_file = Path(saved_path)
+            return self._output_file
 
         for file in self._output_dir.iterdir():
-            if (
-                file.is_file()
-                and file.stem == self._video_id
-                and not self._is_partial(file)
-            ):
-                self._output_file = self._output_dir / f"{file.name}"
-                assert self._output_file.exists(), "Error setting output file"
+            if file.stem == self._video_id and self._is_reusable_download(file):
+                self._output_file = file
                 return self._output_file
 
         return None
@@ -102,14 +86,36 @@ class Downloader:
     def _is_partial(path: Path) -> bool:
         return path.suffix.lower() in {".part", ".ytdl"}
 
-    def _save_downloaded_file(self, path: Path) -> None:
-        manifest_file = self._output_dir / ".downloads.json"
+    def _is_reusable_download(self, path: Path) -> bool:
+        # The manifest is a plain file on disk and its path is uploaded to Gemini
+        # as-is, so a saved path must not lead outside the videos directory, even
+        # through a symlink. Custom yt-dlp templates rename files, so the name
+        # cannot be checked against the video ID.
         try:
-            downloads = json.loads(manifest_file.read_text(encoding="utf-8"))
-        except (FileNotFoundError, json.JSONDecodeError):
-            downloads = {}
+            resolved = path.resolve()
+        except OSError:
+            return False
+        return (
+            resolved.is_relative_to(self._output_dir.resolve())
+            and resolved.is_file()
+            and not self._is_partial(resolved)
+        )
+
+    def _read_manifest(self) -> dict[str, object]:
+        try:
+            downloads = json.loads(self._manifest_file.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            return {}
+        return downloads if isinstance(downloads, dict) else {}
+
+    @property
+    def _manifest_file(self) -> Path:
+        return self._output_dir / ".downloads.json"
+
+    def _save_downloaded_file(self, path: Path) -> None:
+        downloads = self._read_manifest()
         downloads[self._video_id] = str(path)
-        manifest_file.write_text(json.dumps(downloads, indent=2), encoding="utf-8")
+        self._manifest_file.write_text(json.dumps(downloads, indent=2), encoding="utf-8")
 
     def _create_cmd(self) -> list[str]:
         download_command = DownloadCommand(self._video_id, self._output_dir)
