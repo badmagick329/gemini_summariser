@@ -6,7 +6,8 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from google.genai import types
+import httpx
+from google.genai import errors, types
 
 import main
 from exceptions import GeminiGenerationBlockedError, GeminiGenerationError
@@ -251,6 +252,51 @@ class SummariseVideoTests(unittest.TestCase):
         self.assertIn("freeform answer", follow_up["contents"][1])
         self.assertIsNone(follow_up["config"].response_schema)
         self.assertEqual(console.call_args.args[0], "follow-up answer")
+
+
+class ClientRetryTests(unittest.TestCase):
+    """Drives the real client against a fake HTTP transport."""
+
+    def _generate_with_statuses(self, statuses: list[int]):
+        sent = []
+
+        def send(_client, request, **_kwargs):
+            status = statuses[len(sent)]
+            sent.append(request)
+            body = (
+                {"candidates": [{"content": {"role": "model", "parts": [{"text": "ok"}]}}]}
+                if status == 200
+                else {"error": {"code": status, "message": "busy", "status": "UNAVAILABLE"}}
+            )
+            return httpx.Response(status, json=body, request=request)
+
+        with (
+            patch.dict("os.environ", {"API_KEY": "test-key"}),
+            patch("httpx.Client.send", send),
+            patch("time.sleep"),
+        ):
+            client = main.get_client()
+            try:
+                response = client.models.generate_content(
+                    model="model", contents=["hi"], config=main.TEXT_CONFIG
+                )
+            finally:
+                client.close()
+        return response, sent
+
+    def test_transient_server_errors_are_retried(self):
+        response, sent = self._generate_with_statuses([503, 504, 200])
+
+        self.assertEqual(get_response_text(response), "ok")
+        self.assertEqual(len(sent), 3)
+
+    def test_gives_up_after_three_attempts(self):
+        with self.assertRaises(errors.ServerError):
+            self._generate_with_statuses([503, 504, 503, 200])
+
+    def test_client_errors_are_not_retried(self):
+        with self.assertRaises(errors.ClientError):
+            self._generate_with_statuses([400, 200])
 
 
 if __name__ == "__main__":

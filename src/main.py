@@ -35,6 +35,12 @@ SUMMARY_CONFIG = types.GenerateContentConfig(
     http_options=_REQUEST_TIMEOUT,
 )
 TEXT_CONFIG = types.GenerateContentConfig(http_options=_REQUEST_TIMEOUT)
+# Gemini sheds load with 429/5xx (including 504 when its own deadline runs out)
+# and the SDK makes a single attempt unless told otherwise. A few attempts with
+# backoff ride out those spikes without stretching a doomed run much further.
+_RETRY = types.HttpRetryOptions(
+    attempts=3, http_status_codes=[429, 500, 502, 503, 504]
+)
 
 
 def main():
@@ -238,7 +244,10 @@ def get_response_text(response) -> str:
 
 
 def get_client() -> genai.Client:
-    return genai.Client(api_key=os.environ["API_KEY"])
+    return genai.Client(
+        api_key=os.environ["API_KEY"],
+        http_options=types.HttpOptions(retry_options=_RETRY),
+    )
 
 
 if __name__ == "__main__":
